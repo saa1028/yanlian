@@ -1,0 +1,74 @@
+﻿//加载更多
+
+var _curP = 1;//页码
+
+function loadMore(_url,_id,_id1,_type,_div,pagenum){
+//alert(111);
+var more_id1 = '#'+_id1;
+                var pnum=pagenum;
+		var more_id = '#'+_id;
+		var m_div = '#wzqdhlist'+_div;
+				var _uri=_url;	 
+		var _pageSize = $(more_id1).attr("pageSize");//每页记录数
+		if(_curP==undefined || _curP<0){
+			_curP = 0;
+		}
+		if(_pageSize==undefined || _pageSize<1){
+			_pageSize = 10;
+		}
+                
+		if(_curP>0){
+			var adix = '_'+_curP+'.shtml'
+			_url =_url.replace('.shtml',adix);
+		}
+		//alert(_url+adix);
+		if(_type==2){
+	
+	
+				if(_curP >=pnum){//请求页面不存在，隐藏加载更多。
+					$(more_id1).hide();
+				}
+			}else{
+	
+	$.ajax({
+			type:"get",
+			async:false,
+			url:_url,
+			success:function(data){
+				
+					
+			if(_type==0){
+						   addDoc(data,_id,m_div);
+						}else if(_type==1){
+						  addWs(data,_id,m_div);
+						}	
+
+			_curP ++;//当前页++
+
+				$(more_id).attr("curP",_curP);//重置当前页属性
+			},
+			error:function(xmlrequest,textStatus){
+											   // alert(xmlrequest.status);
+				if(xmlrequest.status==404){//请求页面不存在，隐藏加载更多。
+					$(more_id1).hide();
+				}else if(xmlrequest.status!=200){
+					alert('数据加载失败。');
+				}
+			}	
+		});
+	if(_curP >=pnum){//请求页面不存在，隐藏加载更多。
+					$(more_id1).hide();
+				}
+
+    }
+ }
+    //添加文档列表
+    function addDoc(_doc,_id,m_div){
+	
+	var _html=_doc;
+		$('#'+_id+'').before(_html);
+		//同时改变最大容器的高度;
+		$('.main').css("height","auto");
+		var d_height = $(''+m_div+'').height();
+		$('.main').css("height",""+d_height+"px");
+    }

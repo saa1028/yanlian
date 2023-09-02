@@ -1,0 +1,113 @@
+var _getScript = function(url, callback) {
+    var head = document.getElementsByTagName('head')[0],
+        js = document.createElement('script');
+    js.setAttribute('type', 'text/javascript');
+    js.setAttribute('src', url);
+    head.appendChild(js);
+
+    //执行回调
+    var callbackFn = function(){
+        if(typeof callback === 'function'){
+            callback();
+        }
+    };
+
+    if (document.all) { //IE
+        js.onreadystatechange = function() {
+            if (js.readyState == 'loaded' || js.readyState == 'complete') {
+                callbackFn();
+            }
+        }
+    } else {
+        js.onload = function() {
+            callbackFn();
+        }
+    }
+};
+_getScript("https://www.hangzhou.com.cn/extra/js/jweixin-1.6.0.js");
+setTimeout(function () {
+    var imgUrl = '';
+    var text = $("img.OutLInePics").attr("src");
+    if (text) {
+        var index = text.indexOf('http');
+        if (index == 0) {
+            imgUrl = text;
+        } else {
+            imgUrl = 'http:' + text;
+        }
+    } else {
+        imgUrl = 'https://www.hangzhou.com.cn/extra/js/hzwlogo.jpg'
+    }
+
+// 微信分享摘要（35字以内）：必填
+    var descContent = $('.abstract').text();
+    if (!descContent) {
+        descContent = $('meta[name="Description"]').attr('content') || '';
+    }
+//微信分享标题(23字以内)：必填
+    var shareTitle = document.title;
+//如不想使用默认页面title可在html自定义title内容，已自定义title为准，不使用页面默认的title
+    $(document).ready(function () {
+        var share_url = window.location.href;
+        var lineLink = window.location.href;
+        $.ajax({
+            url: "https://hzwwx.hangzhou.com.cn/api/share.php",
+            method: "get",
+            async: false,
+            dataType: "jsonp",
+            jsonp: "jsoncallback",
+            jsonpCallback: "handler",
+            data: {
+                share_url: share_url,
+            },
+            success: function (result) {
+                var sign_params = result.data;
+                wx.config({
+                    debug: false,
+                    appId: sign_params.appid,
+                    timestamp: sign_params.timestamp,
+                    nonceStr: sign_params.noncestr,
+                    signature: sign_params.signature,
+                    jsApiList: ["updateAppMessageShareData", "updateTimelineShareData", "onMenuShareWeibo"]
+                });
+                wx.ready(function () {   //需在用户可能点击分享按钮前就先调用
+                    wx.updateAppMessageShareData({
+                        title: shareTitle, // 分享标题
+                        desc: descContent, // 分享描述
+                        link: lineLink, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+                        imgUrl: imgUrl, // 分享图标
+                        success: function () {
+                            // 设置成功
+                            // callBackShare();
+                        }
+                    })
+                    wx.updateTimelineShareData({
+                        title: shareTitle, // 分享标题
+                        link: lineLink, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+                        imgUrl: imgUrl, // 分享图标
+                        success: function () {
+                            // 设置成功
+                        }
+                    })
+                    wx.onMenuShareWeibo({
+                        title: shareTitle, // 分享标题
+                        desc: descContent, // 分享描述
+                        link: lineLink, // 分享链接
+                        imgUrl: imgUrl, // 分享图标
+                        success: function () {
+                            // 用户确认分享后执行的回调函数
+                        },
+                        cancel: function () {
+                            // 用户取消分享后执行的回调函数
+                        }
+                    });
+                })
+            }
+        });
+        _getScript("https://www.hangzhou.com.cn/extra/js/share.js");
+    });
+}, 1000);
+
+function closeWindow() {
+    WeixinJSBridge.call("closeWindow")
+}

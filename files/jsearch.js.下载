@@ -1,0 +1,109 @@
+﻿ var pagenow = count = countPage = "";
+ var keyword = GetQueryString("keyword");
+ var searchword = GetQueryString("searchword");
+ var page = GetQueryString("page");
+ var searchscope = GetQueryString("searchscope");
+ var channelid = GetQueryString("channelid");
+ var docchannel = GetQueryString("docchannel");
+ var classsql = channel = "";
+ var search_url = "";
+
+ function search(_WAS_URL) {
+     search_url = _WAS_URL;
+     $.ajax({
+         type: "GET",
+         url: search_url + "/search/search?channelid=" + channelid + "&searchword=" + searchword + "&keyword=" + keyword + "&page=" + page,
+         data: "",
+         success: function(data, textStatus) {
+             data = data.replace(/\n/g, "").replace(/=\"/g, "=\\\"").replace(/\"\>/g, "\\\"\>");
+             var dataObj = eval("(" + Trim(data.replace(new RegExp("<br>", "gm"), ""), 'g') + ")");
+             var dataJ = dataObj.data;
+             count = dataObj.count;
+             countPage = Math.ceil(dataObj.count / dataObj.perpage);
+             pagenow = dataObj.page;
+             $(".red").html(count);
+             if (parseInt(pagenow) > parseInt(countPage)) {
+                 $("#jzx_more").hide();
+             }
+             pagenow++;
+             $("#jzx_more").attr("page", pagenow);
+             $("#jzx_more").attr("countPage", countPage);
+             var searchResult = "";
+             for (var i = 0; i < dataJ.length; i++) {
+                 searchResult += '<div class="xb-list-imgcon">' +
+                         '<div class="xb-list-con">' +
+                         '<div class="xb-list-con-title"><a href="' + dataJ[i].DOCPUBURL + '"><p>' + dataJ[i].DOCTITLE.replace(new RegExp("<fontcolor", "gm"), "<font color") + '</p></a></div>' + '<p class="xb-list-p"><a href="' + dataJ[i].DOCPUBURL + '">'+ dataJ[i].DOCABSTRACT.replace(new RegExp("<fontcolor", "gm"), "<font color") + '</a></p>' +
+                         '<div class="xb-list-souce"> <span>' + dataJ[i].DOCRELTIME + '</span>' + '<span class="xb-list-sou">来源:' + dataJ[i].DOCSOURCENAME + '</span></div>' + '</div>' + '</div>'
+             }
+             if (searchResult == null || searchResult == "") {
+                 searchResult = "没有找到你想要的数据";
+             }
+             $("#content").html(searchResult);
+             // $("#div_timeline").html(data);
+         },
+         error: function(XMLHttpRequest, textStatus, errorThrown) {}
+     });
+ };
+
+ function loadList(_WAS_URL) {
+     search_url = _WAS_URL;
+     var cout = $("#jzx_more").attr("countPage");
+     var page = $("#jzx_more").attr("page");
+     if (parseInt(page) > parseInt(cout)) {
+         $("#jzx_more").hide();
+     } else {
+         // alert('进来啦');
+         $.ajax({
+             type: "GET",
+             url: search_url + "/search/search?channelid=" + channelid + "&searchword=" + searchword + "&keyword=" + keyword + "&page=" + page,
+             data: "",
+             success: function(data, textStatus) {
+                 data = data.replace(/\n/g, "").replace(/=\"/g, "=\\\"").replace(/\"\>/g, "\\\"\>");
+                 var dataObj = eval("(" + Trim(data.replace(new RegExp("<br>", "gm"), ""), 'g') + ")");
+                 var dataJ = dataObj.data;
+                 count = dataObj.count;
+                 countPage = Math.ceil(dataObj.count / dataObj.perpage);
+                 pagenow = dataObj.page;
+                 $(".red").html(count);
+                 page++;
+                 $("#jzx_more").attr("page", page);
+                 if (parseInt(page) > parseInt(cout)) {
+                     $("#jzx_more").hide();
+                 }
+                 var searchResult = "";
+                 for (var i = 0; i < dataJ.length; i++) {
+                     searchResult += '<div class="xb-list-imgcon">' +
+                         '<div class="xb-list-con">' +
+                         '<div class="xb-list-con-title"><a href="' + dataJ[i].DOCPUBURL + '"><p>' + dataJ[i].DOCTITLE.replace(new RegExp("<fontcolor", "gm"), "<font color") + '</p></a></div>' + '<p class="xb-list-p"><a href="' + dataJ[i].DOCPUBURL + '">'+ dataJ[i].DOCABSTRACT.replace(new RegExp("<fontcolor", "gm"), "<font color") + '</a></p>' +
+                         '<div class="xb-list-souce"> <span>' + dataJ[i].DOCRELTIME + '</span>' + '<span class="xb-list-sou">来源:' + dataJ[i].DOCSOURCENAME + '</span></div>' + '</div>' + '</div>'
+                 }
+                 if (searchResult == null || searchResult == "") {
+                     searchResult = "没有找到你想要的数据";
+                 }
+                 $(".content").append(searchResult);
+                 // $("#div_timeline").html(data);
+             },
+             error: function(XMLHttpRequest, textStatus, errorThrown) {}
+         });
+     }
+
+ };
+
+ //去除正文中的所有空格
+ function Trim(str, is_global) {
+     var result;
+     result = str.replace(/(^\s+)|(\s+$)/g, "");
+     if (is_global.toLowerCase() == "g") {
+         result = result.replace(/\s/g, "");
+     }
+     return result;
+ }
+ // 获取URL参数值
+ function GetQueryString(name) {
+     var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+     //alert(window.location.search);
+     var r = decodeURI(window.location.search).substr(1).match(reg);
+     if (r != null) return unescape(r[2]);
+     return null;
+
+ }

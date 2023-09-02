@@ -1,0 +1,22 @@
+/**
+ * 
+ * @authors tanglin (you@example.org)
+ * @date    2017-12-04 13:59:59
+ * @version 1.0.0
+ */
+$(function() {
+	//导航
+    $(".xb-hot-list:last").css("border-bottom", "none");
+    $(".xb-subnav-ftit a").click(function() {
+        $(".xb-down").toggle();
+    });
+    $(".nav-head-ul .active").mouseenter(function() {
+        $(this).find('dl').show();
+    });
+    $(".nav-head-ul .active").mouseleave(function() {
+        $(this).find('dl').hide();
+    });
+    $(".xb-nav-zy").click(function() {
+        $(".xb-nav-zy-down").toggle();
+    });
+})
